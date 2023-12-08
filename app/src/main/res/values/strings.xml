@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Fitness tracker</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="web_client_id">586662487613-td7d8tvpdkgk2266s7u6t97kr7sisc1m.apps.googleusercontent.com</string>
 </resources>

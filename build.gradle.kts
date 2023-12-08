@@ -8,5 +8,10 @@ buildscript {
 plugins {
     alias(libs.plugins.androidApplication) apply false
     alias(libs.plugins.kotlinAndroid) apply false
+    alias(libs.plugins.com.google.android.libraries.mapsplatform.secrets.gradle.plugin) apply false
+
+//    alias(libs.plugins.jetbrainsKotlinAndroid) apply false
+    id("com.google.dagger.hilt.android") version "2.48.1" apply false
+
 }
 true // Needed to make the Suppress annotation work for the plugins block

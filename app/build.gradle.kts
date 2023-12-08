@@ -3,6 +3,10 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
     id("com.google.gms.google-services")
+    alias(libs.plugins.com.google.android.libraries.mapsplatform.secrets.gradle.plugin)
+    kotlin("kapt")
+    id("com.google.dagger.hilt.android")
+
 }
 
 android {
@@ -35,9 +39,16 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
-    buildFeatures{
+
+    buildFeatures {
         viewBinding = true
     }
+
+
+
+}
+kapt {
+    correctErrorTypes = true
 }
 
 dependencies {
@@ -48,10 +59,15 @@ dependencies {
     implementation(libs.constraintlayout)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.auth)
+    implementation(libs.play.services.maps)
+    implementation(libs.play.services.auth)
+    implementation(libs.androidx.navigation.fragment.ktx)
+    implementation(libs.androidx.navigation.ui.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.espresso.core)
-
-
+    implementation("com.google.dagger:hilt-android:2.48.1")
+    kapt("com.google.dagger:hilt-android-compiler:2.48.1")
+    implementation("io.coil-kt:coil:2.5.0")
 
 }
