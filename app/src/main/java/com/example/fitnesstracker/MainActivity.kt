@@ -58,9 +58,11 @@ class MainActivity : AppCompatActivity() {
 
         if (ContextCompat.checkSelfPermission(this,Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_DENIED)
             requestPermissions(arrayOf(Manifest.permission.ACTIVITY_RECOGNITION),10)
+        if (ContextCompat.checkSelfPermission(this,Manifest.permission.SCHEDULE_EXACT_ALARM) == PackageManager.PERMISSION_DENIED)
+            requestPermissions(arrayOf(Manifest.permission.SCHEDULE_EXACT_ALARM),10)
 
-
-
+        if (ContextCompat.checkSelfPermission(this,Manifest.permission.SET_ALARM) == PackageManager.PERMISSION_DENIED)
+            requestPermissions(arrayOf(Manifest.permission.SET_ALARM),10)
 //        if (getSharedPreferences("pref", MODE_PRIVATE).getBoolean("login", false))
 //            navHost.findNavController().navigate(R.id.homeScreen)
 

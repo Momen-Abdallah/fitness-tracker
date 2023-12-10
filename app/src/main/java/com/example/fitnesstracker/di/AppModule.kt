@@ -3,6 +3,7 @@ package com.example.fitnesstracker.di
 import android.content.Context
 import com.example.fitnesstracker.R
 import com.example.fitnesstracker.data.repo.AuthRepository
+import com.example.fitnesstracker.data.repo.StepsRepository
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.identity.SignInClient
@@ -22,6 +23,14 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 class AppModule {
+
+
+    @Provides
+    @Singleton
+    fun provideContext(@ApplicationContext context: Context) = context
+    @Provides
+    @Singleton
+    fun provideStepsRepository(@ApplicationContext context: Context) = StepsRepository(context)
     @Provides
     @Singleton
     fun providesAuth() = Firebase.auth
@@ -34,7 +43,7 @@ class AppModule {
 
     @Provides
     @Singleton
-    fun provideRepository(
+    fun provideAuthRepository(
         @ApplicationContext context: Context,
         fireStore : FirebaseFirestore,
         auth : FirebaseAuth,
