@@ -5,6 +5,8 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.hardware.SensorManager
 import android.os.Build
 import android.os.Bundle
@@ -31,7 +33,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.format.TextStyle
 import java.util.Calendar
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 
@@ -55,8 +59,8 @@ class HomeScreen : Fragment()//, SensorEventListener
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        binding =  HomeScreenBinding.inflate(inflater, container, false)
-       // sensorManager = requireContext().getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        binding = HomeScreenBinding.inflate(inflater, container, false)
+        // sensorManager = requireContext().getSystemService(Context.SENSOR_SERVICE) as SensorManager
         alarmManager = requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
         //val stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
@@ -86,36 +90,103 @@ class HomeScreen : Fragment()//, SensorEventListener
 //        }
 
         scheduleResetAlarm()
-        scheduleWork()
+//        scheduleWork()
         viewModel.registerSensors()
-        viewModel.steps.observe(viewLifecycleOwner){
-            binding.stepsText.text = viewModel.steps.value.toString()
-        }
-
-
-
-
-        binding.first.dayText.text = "S"
-        binding.second.dayText.text = "M"
-        binding.third.dayText.text = "T"
-        binding.forth.dayText.text = "W"
-        binding.fifth.dayText.text = "T"
-        binding.sixth.dayText.text = "F"
-        binding.seventh.dayText.text = "S"
-
         binding.progressBar.max = 1000
-        binding.progressBar.progress=300
+
+        viewModel.steps.observe(viewLifecycleOwner) {
+//            binding.stepsText.text = viewModel.steps.value.toString()
+            binding.stepsText.text =
+                requireContext().getSharedPreferences("pref", Context.MODE_PRIVATE)
+                    .getInt("today_steps", 0).toString()
+            binding.first.progressCircular.progress = it
+            binding.progressBar.progress = it
+
+        }
+        viewModel.stepsWeeksData.observe(viewLifecycleOwner) { data ->
+            for (i in 0..6) {
+
+                val date = LocalDate.now().minusDays(i.toLong()).toString()
+                val day =
+                    LocalDate.now().minusDays(i.toLong()).dayOfWeek.toString().first().toString()
 
 
-        binding.first.progressCircular.max = 1000
-        binding.first.progressCircular.progress = 700
-        binding.second.progressCircular.max = 1000
-        binding.second.progressCircular.progress = 300
+                when (i) {
+                    0 -> {
+                        binding.first.dayText.text = day
+                        binding.first.dayText.setTextColor(Color.RED)
+//                        data[date]?.let { binding.first.progressCircular.progress = (it as Long).toInt() }
+                    }
+
+                    1 -> {
+                        binding.second.dayText.text = day
+                        data[date]?.let {
+                            binding.second.progressCircular.progress = (it as Long).toInt()
+                        }
+                    }
+
+                    2 -> {
+                        binding.third.dayText.text = day
+                        data[date]?.let {
+                            binding.third.progressCircular.progress = (it as Long).toInt()
+                        }
+                    }
+
+                    3 -> {
+                        binding.forth.dayText.text = day
+                        data[date]?.let {
+                            binding.forth.progressCircular.progress = (it as Long).toInt()
+                        }
+                    }
+
+                    4 -> {
+                        binding.fifth.dayText.text = day
+                        data[date]?.let {
+                            binding.fifth.progressCircular.progress = (it as Long).toInt()
+                        }
+                    }
+
+                    5 -> {
+                        binding.sixth.dayText.text = day
+                        data[date]?.let {
+                            binding.sixth.progressCircular.progress = (it as Long).toInt()
+                        }
+                    }
+
+                    6 -> {
+                        binding.seventh.dayText.text = day
+                        data[date]?.let {
+                            binding.seventh.progressCircular.progress = (it as Long).toInt()
+                        }
+                    }
+                }
+
+
+            }
+        }
+        viewModel.getDaysData()
+
+
+//        binding.first.dayText.text = "S"
+//        binding.second.dayText.text = "M"
+//        binding.third.dayText.text = "T"
+//        binding.forth.dayText.text = "W"
+//        binding.fifth.dayText.text = "T"
+//        binding.sixth.dayText.text = "F"
+//        binding.seventh.dayText.text = "S"
+//
+//        binding.progressBar.progress=300
+//
+//
+//        binding.first.progressCircular.max = 1000
+//        binding.first.progressCircular.progress = 700
+//        binding.second.progressCircular.max = 1000
+//        binding.second.progressCircular.progress = 300
 
 //        if (stepSensor != null){
 //        }
 
-         return binding.root
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -144,18 +215,34 @@ class HomeScreen : Fragment()//, SensorEventListener
         super.onDestroyView()
 //        viewModel.unregisterSensors()
     }
-    private fun scheduleResetAlarm(){
+
+    private fun scheduleResetAlarm() {
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = System.currentTimeMillis()
-        calendar.set(Calendar.HOUR_OF_DAY,19)
-        calendar.set(Calendar.MINUTE,54)
-        calendar.set(Calendar.SECOND,0)
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 5)
+        calendar.set(Calendar.SECOND, 0)
 
         alarmManager = requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val triggerTime = System.currentTimeMillis() + 10 * 1000 // 1 hour from now
+        val intent = Intent(requireContext(), StepCountResetReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(
+            requireContext(), 0, intent,
+            PendingIntent.FLAG_IMMUTABLE
+        )
 
-        val intent = Intent(requireContext(),StepCountResetReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(requireContext(), 0, intent,
-            PendingIntent.FLAG_IMMUTABLE)
+//        val windowStart = calendar.timeInMillis
+//        calendar.set(Calendar.MINUTE,5)
+//        val windowEnd = calendar.timeInMillis
+
+//        alarmManager.setWindow(AlarmManager.RTC_WAKEUP,windowStart,windowEnd,pendingIntent)
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
+//        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
+//        alarmManager.setAlarmClock(AlarmManager.AlarmClockInfo(triggerTime, pendingIntent), pendingIntent)
+
+//        }else{
+//            alarmManager.setExact(AlarmManager.RTC_WAKEUP,calendar.timeInMillis,pendingIntent)
+//        }
 
         alarmManager.setRepeating(
             AlarmManager.RTC_WAKEUP,
@@ -163,8 +250,21 @@ class HomeScreen : Fragment()//, SensorEventListener
             AlarmManager.INTERVAL_DAY,
             pendingIntent
         )
+//        alarmManager.setAlarmClock(
+//            AlarmManager.RTC_WAKEUP,
+//            calendar.timeInMillis,
+//            AlarmManager.INTERVAL_DAY,
+//            pendingIntent
+//        )
 
+//        alarmManager.setExactAndAllowWhileIdle(
+//            AlarmManager.RTC_WAKEUP,
+//            calendar.timeInMillis,
+//            pendingIntent
+//        )
 
+//        alarmManager.set
+//        alarmManager.setExactAndAllowWhileIdle()
 
     }
 
@@ -190,21 +290,37 @@ class HomeScreen : Fragment()//, SensorEventListener
 //                workRequest
 //            )
 
+        //work manager is used for schedule the notification to be send everyday without care about the time
+        // or execute an operation at such constraints
+
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.HOUR_OF_DAY, 1)
+        calendar.set(Calendar.MINUTE, 30)
+        calendar.set(Calendar.SECOND, 0)
+        val currentTime = System.currentTimeMillis()
+        val timeDiff = calendar.timeInMillis - currentTime
+        //
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .setRequiresCharging(false)
             .setRequiresBatteryNotLow(true)
             .build()
 
-        val workRequest = PeriodicWorkRequestBuilder<StepResetWorker>(15, TimeUnit.MINUTES)
+        val workRequest = PeriodicWorkRequestBuilder<StepResetWorker>(24, TimeUnit.HOURS)
             .setConstraints(constraints)
-            .setInitialDelay(0, TimeUnit.MILLISECONDS)
+            .setInitialDelay(timeDiff, TimeUnit.SECONDS)
             .build()
 
         WorkManager.getInstance(requireContext().applicationContext).enqueueUniquePeriodicWork(
-            "my_unique_work_name",
+            "worker_1",
             ExistingPeriodicWorkPolicy.KEEP,
             workRequest
         )
+    }
+
+    fun getDayOfWeek(dateString: String): String {
+        val date = LocalDate.parse(dateString)
+        val dayOfWeek = date.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.getDefault())
+        return dayOfWeek
     }
 }

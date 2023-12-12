@@ -18,19 +18,20 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 
 @AndroidEntryPoint
 class StepCountResetReceiver : BroadcastReceiver() {
 
-    @Inject
-     lateinit var repository: StepsRepository
-    @Inject
-    lateinit var context: Context
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    override fun onReceive(p0: Context?, p1: Intent?) {
+//    @Inject
+//     lateinit var repository: StepsRepository
+//    @Inject
+//    lateinit var context: Context
+
+    override fun onReceive(context: Context?, p1: Intent?) {
         if (p1?.action == Intent.ACTION_BOOT_COMPLETED){
 
 //            with(NotificationManagerCompat.from(this)) {
@@ -51,21 +52,33 @@ class StepCountResetReceiver : BroadcastReceiver() {
 //                }
 //                notify("@", builder.build())
 //            }
-            val steps = repository.steps.value?:0
+//            val steps = repository.steps.value?:0
 //            GlobalScope.launch(Dispatchers.IO) {
 //                repository.insertTodaySteps(steps)
 //            }
 
-            Log.d("broadcast1234567","broadcast1234567")
+            if (context!=null)
+            GlobalScope.launch {
+                Log.d("StepBroadcast123","Succeed")
 
-            repository.steps.value = 0
+                val todaySteps = context.getSharedPreferences("pref", Context.MODE_PRIVATE).getInt("today_steps",0)
+                val allSteps = context.getSharedPreferences("pref", Context.MODE_PRIVATE).getInt("all_steps",0)
 
-            // save the data of the previous day
-            //
-            val editor = context.getSharedPreferences("pref",MODE_PRIVATE).edit()
-            val oldSteps = context.getSharedPreferences("pref",MODE_PRIVATE).getInt("initial_steps",0)
-            editor.putInt("initial_steps",steps + oldSteps)
-            editor.apply()
+                withContext(Dispatchers.IO) {
+                    StepsRepository(context)
+                        .insertTodaySteps(steps = todaySteps)
+                }
+
+                val editor = context.getSharedPreferences("pref", Context.MODE_PRIVATE).edit()
+                editor.putInt("all_steps",todaySteps + allSteps)
+                editor.putInt("today_steps",0)
+                editor.apply()
+            }
+            else{
+                Log.d("StepBroadcast123","Failed")
+
+            }
+
 
 
         }

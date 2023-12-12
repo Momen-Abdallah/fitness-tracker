@@ -9,16 +9,28 @@ import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.fitnesstracker.Utilts
 import com.example.fitnesstracker.data.repo.StepsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
 @HiltViewModel
 class HomeScreenViewModel @Inject constructor(val repository: StepsRepository): ViewModel()  {
 
+
+    val stepsWeeksData = MutableLiveData<Map<String,Any>>()
+     fun getDaysData() {
+        viewModelScope.launch {
+            stepsWeeksData.value = repository.getDaysData().data
+        }
+    }
 
 //    private lateinit var sensorManager: SensorManager
 //    private lateinit var step_sensor : Sensor

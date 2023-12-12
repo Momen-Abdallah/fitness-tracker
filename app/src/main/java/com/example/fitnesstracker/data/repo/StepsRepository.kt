@@ -13,11 +13,13 @@ import androidx.lifecycle.MutableLiveData
 import com.example.fitnesstracker.Utilts
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.dataObjects
 import com.google.firebase.firestore.firestore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
+import java.time.LocalTime
 import javax.inject.Inject
 
 class StepsRepository (val context: Context) :
@@ -27,11 +29,21 @@ class StepsRepository (val context: Context) :
     private lateinit var step_sensor : Sensor
     var steps  =  MutableLiveData<Int>(0)
 
+    suspend fun getDaysData() =
 
-    @RequiresApi(Build.VERSION_CODES.O)
+        Firebase.firestore.collection("users").document(Firebase.auth.uid!!)
+            .collection("StepsData")
+            .document("DailySteps")
+            .get().await()
+
+
     suspend fun insertTodaySteps(steps : Int){
-        Firebase.firestore.collection("users").document(Firebase.auth.uid!!).collection("DailySteps").document("steps")
-            .set(mapOf(LocalDate.now().dayOfMonth.minus(1) to steps)).await()
+
+        Firebase.firestore.collection("users").document(Firebase.auth.uid!!)
+            .collection("StepsData")
+            .document("DailySteps")
+            .set(mapOf(LocalTime.now().toString() to steps), SetOptions.merge())
+            .await()
 
     }
     fun registerSensors(){
@@ -57,12 +69,15 @@ class StepsRepository (val context: Context) :
 //        }
 
         if (p0?.sensor?.type == Sensor.TYPE_STEP_COUNTER){
-            steps.value = p0.values[0].toInt() - allSteps
 
             context.getSharedPreferences("pref", Context.MODE_PRIVATE)
                 .edit()
-                .putInt("today_steps" ,p0.values[0].toInt() - allSteps)
+                .putInt("today_steps" , p0.values[0].toInt() - allSteps)
                 .apply()
+
+            steps.value = p0.values[0].toInt() - allSteps
+
+
 
         }
     }
