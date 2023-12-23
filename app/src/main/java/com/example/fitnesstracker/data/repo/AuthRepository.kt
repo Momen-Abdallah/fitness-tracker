@@ -27,7 +27,6 @@ class AuthRepository @Inject constructor(
 ){
     suspend fun signInWithGoogle() : BeginSignInResult?{
 //        signInClient.beginSignIn(signInRequest).await()
-
         try {
 //            val result = Identity.getSignInClient(context).beginSignIn(
 //                BeginSignInRequest.builder()
@@ -42,7 +41,6 @@ class AuthRepository @Inject constructor(
 //                    .build()).await()
 //
 //            return result
-
             return onTapClient.beginSignIn(signInRequest).await()
         }catch (e : Exception){
             return null

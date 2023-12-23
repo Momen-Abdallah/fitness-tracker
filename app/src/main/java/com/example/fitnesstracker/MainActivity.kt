@@ -60,7 +60,7 @@ class MainActivity : AppCompatActivity() {
             requestPermissions(arrayOf(Manifest.permission.ACTIVITY_RECOGNITION),10)
 
         }
-        if (ContextCompat.checkSelfPermission(this,Manifest.permission.SCHEDULE_EXACT_ALARM) == PackageManager.PERMISSION_DENIED)
+        if (ContextCompat.checkSelfPermission(this,Manifest.permission.BODY_SENSORS) == PackageManager.PERMISSION_DENIED)
             requestPermissions(arrayOf(Manifest.permission.SCHEDULE_EXACT_ALARM),10)
 
         if (ContextCompat.checkSelfPermission(this,Manifest.permission.SET_ALARM) == PackageManager.PERMISSION_DENIED)

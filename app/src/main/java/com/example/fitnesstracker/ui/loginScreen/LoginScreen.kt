@@ -1,38 +1,32 @@
 package com.example.fitnesstracker.ui.loginScreen
 
 import android.app.Activity
-import android.app.Instrumentation.ActivityResult
+import android.content.ContentValues
 import android.content.Context.MODE_PRIVATE
-import android.content.Intent
 import android.os.Bundle
-import androidx.fragment.app.Fragment
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.IntentSenderRequest
-import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.fitnesstracker.R
 import com.example.fitnesstracker.databinding.LoginScreenBinding
-import com.google.android.gms.auth.api.identity.BeginSignInRequest
-import com.google.android.gms.auth.api.identity.Identity
-import com.google.android.gms.auth.api.identity.SignInClient
-import com.google.firebase.Firebase
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.auth.auth
-import com.google.firebase.auth.oAuthCredential
-import com.google.firebase.firestore.FirebaseFirestore
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.fitness.Fitness
+import com.google.android.gms.fitness.FitnessOptions
+import com.google.android.gms.fitness.data.DataType
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
 
 @AndroidEntryPoint
@@ -160,6 +154,10 @@ class LoginScreen : Fragment() {
  //            }
          }*/
 
+
+//        val fitnessOptions = FitnessOptions.builder().addDataType(DataType.TYPE_STEP_COUNT_DELTA)
+//        Fitness.getRecordingClient(requireContext(), GoogleSignIn.getAccountForExtension(requireContext(),FitnessOptions.builder().build()))
+
         val launcher =
             registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
                 if (it.resultCode == Activity.RESULT_OK) {
@@ -175,12 +173,42 @@ class LoginScreen : Fragment() {
                         editor.putBoolean("login", true)
                         editor.apply()
 
-                        withContext(Dispatchers.Main) {
-                            findNavController().navigate(R.id.action_loginScreen_to_homeScreen)
-                        }
-
-
+//                        withContext(Dispatchers.Main) {
+//                            findNavController().navigate(R.id.action_loginScreen_to_homeScreen)
+//                        }
                     }
+
+                    val fitnessOptions = FitnessOptions.builder()
+                        .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+                        .build()
+
+                    val googleSignInAccount =
+                        GoogleSignIn.getAccountForExtension(requireContext(), fitnessOptions)
+//        Fitness.getRecordingClient(requireContext(),googleSignInAccount)
+
+
+                    if (!GoogleSignIn.hasPermissions(googleSignInAccount, fitnessOptions)) {
+                        GoogleSignIn.requestPermissions(
+                            this@LoginScreen, // Activity
+                            1,
+                            googleSignInAccount,
+                            fitnessOptions
+                        )
+                    }
+                    Fitness.getRecordingClient(
+                        requireContext(),
+                        GoogleSignIn.getAccountForExtension(requireContext(), fitnessOptions)
+                    )
+                        .subscribe(DataType.TYPE_STEP_COUNT_DELTA)
+                        .addOnSuccessListener {
+                            Log.i(ContentValues.TAG, "Subscription was successful!")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.w(ContentValues.TAG, "There was a problem subscribing ", e)
+                        }
+                    findNavController().navigate(R.id.action_loginScreen_to_homeScreen)
+
+
                 }
             }
 

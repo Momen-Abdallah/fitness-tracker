@@ -6,7 +6,6 @@ plugins {
     alias(libs.plugins.com.google.android.libraries.mapsplatform.secrets.gradle.plugin)
     kotlin("kapt")
     id("com.google.dagger.hilt.android")
-
 }
 
 android {
@@ -70,5 +69,7 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.48.1")
     kapt("com.google.dagger:hilt-android-compiler:2.48.1")
     implementation("io.coil-kt:coil:2.5.0")
-
+    implementation ("net.danlew:android.joda:2.12.5")
+//    implementation ("androidx.health.connect:connect-client:1.1.0-alpha02")
+    implementation("com.google.android.gms:play-services-fitness:21.1.0")
 }

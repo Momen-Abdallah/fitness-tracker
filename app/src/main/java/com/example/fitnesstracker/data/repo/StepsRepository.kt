@@ -42,7 +42,7 @@ class StepsRepository (val context: Context) :
         Firebase.firestore.collection("users").document(Firebase.auth.uid!!)
             .collection("StepsData")
             .document("DailySteps")
-            .set(mapOf(LocalTime.now().toString() to steps), SetOptions.merge())
+            .set(mapOf(LocalDate.now().minusDays(1).toString() to steps), SetOptions.merge())
             .await()
 
     }
@@ -52,6 +52,8 @@ class StepsRepository (val context: Context) :
             step_sensor = it
         }
         sensorManager.registerListener(this,step_sensor,SensorManager.SENSOR_DELAY_NORMAL)
+
+        steps.value = 0
     }
     fun unregisterSensors(){
         sensorManager.unregisterListener(this)
@@ -60,7 +62,6 @@ class StepsRepository (val context: Context) :
 
 
         Toast.makeText(context, "sensor changed", Toast.LENGTH_SHORT).show()
-
         val allSteps = context.getSharedPreferences("pref", Context.MODE_PRIVATE).getInt("all_steps",0)
 
 //        val initialStepCount =
@@ -70,15 +71,13 @@ class StepsRepository (val context: Context) :
 
         if (p0?.sensor?.type == Sensor.TYPE_STEP_COUNTER){
 
-            context.getSharedPreferences("pref", Context.MODE_PRIVATE)
-                .edit()
-                .putInt("today_steps" , p0.values[0].toInt() - allSteps)
+            val pref = context.getSharedPreferences("pref", Context.MODE_PRIVATE)
+
+            pref.edit().putInt("today_steps" , allSteps - pref.getInt("today_steps",0))
                 .apply()
-
-            steps.value = p0.values[0].toInt() - allSteps
-
-
-
+//            step_sensor.
+//            steps.value = p0.values[0].toInt() //- allSteps
+            steps.value = pref.getInt("today_steps",0)
         }
     }
 
