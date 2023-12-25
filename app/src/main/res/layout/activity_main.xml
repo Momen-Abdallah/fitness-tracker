@@ -31,13 +31,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/bottom_nav_shape"
-        app:backgroundTint="@color/white"
+        app:backgroundTint="@color/dark_gray"
         app:labelVisibilityMode="selected"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:menu="@menu/bottom_bar_menu" />
+        app:menu="@menu/bottom_bar_menu"
+        app:itemIconTint="@color/white"
+        app:itemTextColor="@color/white"
+       />
 
 
     <!--    <com.google.android.material.appbar.AppBarLayout-->

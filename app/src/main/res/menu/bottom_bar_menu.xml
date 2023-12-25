@@ -7,6 +7,7 @@
         android:title="Home"
         android:icon="@drawable/home_icon_selector"
         app:showAsAction="ifRoom"
+        android:tooltipText=""
         />
 
     <item
@@ -14,6 +15,7 @@
         android:title="Settings"
         android:icon="@drawable/settings_icon_selector"
         app:showAsAction="ifRoom"
+
         />
 
 </menu>

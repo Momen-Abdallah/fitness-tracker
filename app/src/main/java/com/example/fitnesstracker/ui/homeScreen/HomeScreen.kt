@@ -19,11 +19,13 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.example.fitnesstracker.R
 import com.example.fitnesstracker.databinding.HomeScreenBinding
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.fitness.Fitness
@@ -60,25 +62,37 @@ class HomeScreen : Fragment()//, SensorEventListener
     var t = false
     lateinit var sensorManager: SensorManager
     lateinit var alarmManager: AlarmManager
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
 
-
-    }
 
     override fun onResume() {
         super.onResume()
-        val t_steps = requireContext().getSharedPreferences("pref", Context.MODE_PRIVATE)
-            .getInt("today_steps", 0)
-        binding.min.amountText.text =
-            (t_steps / 6000.0).roundToInt().toString().apply { if (length > 4) substring(3) }
-        binding.kcal.amountText.text =
-            (t_steps * 0.04).toString().apply { if (length > 4) this.substring(3) }
-        binding.km.amountText.text =
-            (t_steps * 75 / 100000.0).toString().apply { if (length > 4) substring(3) }
+//        val t_steps = requireContext().getSharedPreferences("pref", Context.MODE_PRIVATE)
+//            .getInt("today_steps", 0)
+//        binding.min.amountText.text =
+//            (t_steps / 6000.0).roundToInt().toString().apply { if (length > 4) substring(3) }
+//        binding.kcal.amountText.text =
+//            (t_steps * 0.04).toString().apply { if (length > 4) this.substring(3) }
+//        binding.km.amountText.text =
+//            (t_steps * 75 / 100000.0).toString().apply { if (length > 4) substring(3) }
+
+        val goal = viewModel.getGoal()
+        binding.first.progressCircular.max = goal
+        binding.second.progressCircular.max = goal
+        binding.third.progressCircular.max = goal
+        binding.forth.progressCircular.max = goal
+        binding.fifth.progressCircular.max = goal
+        binding.sixth.progressCircular.max = goal
+        binding.seventh.progressCircular.max = goal
+        binding.progressBar.max = goal
+        binding.goalText.text = "/${goal} Steps"
+
+        viewModel.getStepsData()
+        viewModel.getDistance()
+        viewModel.getMin()
+        viewModel.getCal()
+
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -97,14 +111,61 @@ class HomeScreen : Fragment()//, SensorEventListener
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-            binding.first.progressCircular.max = 6000
-            binding.second.progressCircular.max = 6000
-            binding.third.progressCircular.max = 6000
-            binding.forth.progressCircular.max = 6000
-            binding.fifth.progressCircular.max = 6000
-            binding.sixth.progressCircular.max = 6000
-            binding.seventh.progressCircular.max = 6000
-            binding.progressBar.max = 6000
+//        val goal = requireContext().getSharedPreferences("pref",Context.MODE_PRIVATE).getInt("goal",6000)
+//            binding.first.progressCircular.max = goal
+//            binding.second.progressCircular.max = goal
+//            binding.third.progressCircular.max = goal
+//            binding.forth.progressCircular.max = goal
+//            binding.fifth.progressCircular.max = goal
+//            binding.sixth.progressCircular.max = goal
+//            binding.seventh.progressCircular.max = goal
+//            binding.progressBar.max = goal
+//            binding.goalText.text = goal.toString()
+            binding.min.unit.text = "Min"
+            binding.kcal.unit.text = "Cal"
+            binding.km.unit.text =  "Km"
+
+
+        viewModel.lastWeekStepsData.observe(viewLifecycleOwner){
+            binding.stepsText.text = it[0].toString()
+            binding.second.progressCircular.progress = it[1]
+            binding.third.progressCircular.progress = it[2]
+            binding.forth.progressCircular.progress = it[3]
+            binding.fifth.progressCircular.progress = it[4]
+            binding.sixth.progressCircular.progress = it[5]
+            binding.seventh.progressCircular.progress = it[6]
+
+            binding.first.progressCircular.progress = it[0]
+            binding.progressBar.progress = it[0]
+        }
+
+        viewModel.days.observe(viewLifecycleOwner){
+            binding.first.dayText.text = it[0]
+            binding.second.dayText.text = it[1]
+            binding.third.dayText.text = it[2]
+            binding.forth.dayText.text = it[3]
+            binding.fifth.dayText.text = it[4]
+            binding.sixth.dayText.text = it[5]
+            binding.seventh.dayText.text = it[6]
+
+            binding.first.dayText.setTextColor(requireContext().getColor(R.color.light_red))
+        }
+
+        viewModel.distance.observe(viewLifecycleOwner){
+            binding.km.amountText.text = it
+        }
+        viewModel.cal.observe(viewLifecycleOwner){
+            binding.kcal.amountText.text = it
+        }
+        viewModel.min.observe(viewLifecycleOwner){
+            binding.min.amountText.text = it
+        }
+
+        viewModel.weekAverage.observe(viewLifecycleOwner){
+            binding.dailyAverage.text = "Week average: ${it}"
+        }
+
+
 //        binding.stepsText.text = requireContext().getSharedPreferences("pref",Context.MODE_PRIVATE).getInt("today_steps",0).toString()
 //        WorkManager.getInstance(requireContext()).cancelAllWork()
 
@@ -203,23 +264,18 @@ class HomeScreen : Fragment()//, SensorEventListener
 //        }
 //        viewModel.getDaysData()
 
-        val fitnessOptions = FitnessOptions.builder()
+       /* val fitnessOptions = FitnessOptions.builder()
             .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_DISTANCE_DELTA,FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_MOVE_MINUTES,FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_CALORIES_EXPENDED,FitnessOptions.ACCESS_READ)
             .build()
 
         val googleSignInAccount = GoogleSignIn.getAccountForExtension(requireContext(),fitnessOptions)
 //        Fitness.getRecordingClient(requireContext(),googleSignInAccount)
 
-
         try {
-//            if (!GoogleSignIn.hasPermissions(googleSignInAccount, fitnessOptions)) {
-//                GoogleSignIn.requestPermissions(
-//                    this, // Activity
-//                    1,
-//                    googleSignInAccount,
-//                    fitnessOptions
-//                )
-//            }
+
 //            Fitness.getRecordingClient(requireContext(), GoogleSignIn.getAccountForExtension(requireContext(), fitnessOptions))
 //                .subscribe(DataType.TYPE_STEP_COUNT_DELTA)
 //                .addOnSuccessListener {
@@ -249,6 +305,14 @@ class HomeScreen : Fragment()//, SensorEventListener
 
 //            val startTime = LocalDate.now().atStartOfDay(ZoneId.systemDefault())
 //            val endTime = LocalDateTime.of(LocalDate.now().minusDays(1), LocalTime.MIDNIGHT)
+            if (!GoogleSignIn.hasPermissions(googleSignInAccount, fitnessOptions)) {
+                GoogleSignIn.requestPermissions(
+                    this, // Activity
+                    1,
+                    googleSignInAccount,
+                    fitnessOptions
+                )
+            }
 
             for (i in 0..6){
                 var startTime : ZonedDateTime
@@ -292,14 +356,16 @@ class HomeScreen : Fragment()//, SensorEventListener
                             0->{
                                 binding.stepsText.text = totalSteps.toString()
                                 binding.first.progressCircular.progress = totalSteps
+                                binding.progressBar.progress = totalSteps
                                 binding.first.dayText.text = day
+                                binding.first.dayText.setTextColor(Color.RED)
+//                                binding.min.amountText.text =
+//                                    (totalSteps / 6000.0).roundToInt().toString().apply { if (length > 4) substring(3) }
+//                                binding.kcal.amountText.text =
+//                                    (totalSteps * 0.04).toString().apply { if (length > 4) this.substring(3) }
+//                                binding.km.amountText.text =
+//                                    (totalSteps * 75 / 100000.0).toString().apply { if (length > 4) substring(3) }
 
-                                binding.min.amountText.text =
-                                    (totalSteps / 6000.0).roundToInt().toString().apply { if (length > 4) substring(3) }
-                                binding.kcal.amountText.text =
-                                    (totalSteps * 0.04).toString().apply { if (length > 4) this.substring(3) }
-                                binding.km.amountText.text =
-                                    (totalSteps * 75 / 100000.0).toString().apply { if (length > 4) substring(3) }
                             }
                             1->{
                                 binding.second.progressCircular.progress = totalSteps
@@ -338,40 +404,74 @@ class HomeScreen : Fragment()//, SensorEventListener
 
 
 
+
             val historyClient = Fitness.getHistoryClient(requireContext(), googleSignInAccount)
-            historyClient.readDailyTotal(DataType.TYPE_LOCATION_SAMPLE).addOnSuccessListener {
-                Toast.makeText(requireContext(), "Success", Toast.LENGTH_SHORT).show()
-//            if (!it.isEmpty){
-//                for (i in  it.dataPoints){
-//                    when()
+            historyClient.readDailyTotal(DataType.TYPE_DISTANCE_DELTA).addOnSuccessListener {
+//                Toast.makeText(requireContext(), "Success1 ${(it.dataPoints.size)}", Toast.LENGTH_SHORT).show()
+//                binding.km.amountText.text = (it.dataPoints[0]?.getValue(Field.FIELD_DISTANCE)?.toString() ?: 0).toString()
+                if (it.dataPoints.isNotEmpty()){
+                    val data = (it.dataPoints[0]?.getValue(Field.FIELD_DISTANCE)?.toString()!!.toDouble()/1000 * 1.609).toString()
+                    if (data!!.length - data.indexOf('.') > 3){
+                        binding.km.amountText.text = data.removeRange(data.indexOf('.')+2,data.length-1)
+                    }
+                    else{
+                        binding.km.amountText.text =  data
+                    }
+                }
+
+//                if (it.dataPoints.firstOrNull()?.getValue(Field.FIELD_DISTANCE) != null
+//                ) {
+////                    Toast.makeText(requireContext(), "null1 ${(it.dataPoints.size)}", Toast.LENGTH_SHORT).show()
+//                    Toast.makeText(requireContext(), "null1 ${it.dataPoints.firstOrNull()?.getValue(Field.FIELD_DISTANCE)}", Toast.LENGTH_SHORT).show()
 //                }
-//                if ()
 
-//                binding.stepsText.text =
-//                    (it.dataPoints[0]?.getValue(Field.FIELD_STEPS)?.asInt() ?: 0).toString()
-//                binding.first.progressCircular.progress =
-//                    it.dataPoints.size
-
-//                binding.second.progressCircular.progress =
-//                    it.dataPoints[1]?.getValue(Field.FIELD_STEPS)?.asInt() ?: 0
-//                binding.third.progressCircular.progress =
-//                    it.dataPoints[2]?.getValue(Field.FIELD_STEPS)?.asInt() ?: 0
-//                binding.forth.progressCircular.progress =
-//                    it.dataPoints[3]?.getValue(Field.FIELD_STEPS)?.asInt() ?: 0
-//                binding.fifth.progressCircular.progress =
-//                    it.dataPoints[4]?.getValue(Field.FIELD_STEPS)?.asInt() ?: 0
-//                binding.sixth.progressCircular.progress =
-//                    it.dataPoints[5]?.getValue(Field.FIELD_STEPS)?.asInt() ?: 0
-//                binding.seventh.progressCircular.progress =
-//                    it.dataPoints[6]?.getValue(Field.FIELD_STEPS)?.asInt() ?: 0
-//            }
             }.addOnFailureListener {
                 Toast.makeText(requireContext(), "Failed", Toast.LENGTH_SHORT).show()
 
             }
+            historyClient.readDailyTotal(DataType.TYPE_MOVE_MINUTES).addOnSuccessListener {
+
+
+//                Toast.makeText(requireContext(), "Success2 ${(it.dataPoints.size)}", Toast.LENGTH_SHORT).show()
+                if (it.dataPoints.isNotEmpty()){
+                    val data = it.dataPoints[0]?.getValue(Field.FIELD_DURATION)?.toString()
+                    if (data!!.length - data.indexOf('.') > 3){
+                        binding.min.amountText.text = data.removeRange(data.indexOf('.')+2,data.length-1)
+                    }
+                    else{
+                        binding.min.amountText.text =  data
+                    }
+                }
+
+
+            }.addOnFailureListener {
+                Toast.makeText(requireContext(), "Failed", Toast.LENGTH_SHORT).show()
+
+            }
+            historyClient.readDailyTotal(DataType.TYPE_CALORIES_EXPENDED).addOnSuccessListener {
+//                Toast.makeText(requireContext(), "Success3 ${(it.dataPoints.size)}", Toast.LENGTH_SHORT).show()
+//                binding.kcal.amountText.text = (it.dataPoints[0]?.getValue(Field.FIELD_CALORIES)?.toString() ?: 0).toString()
+                if (it.dataPoints.isNotEmpty()){
+                    val data = it.dataPoints[0]?.getValue(Field.FIELD_CALORIES)?.toString()
+                    if (data!!.length - data.indexOf('.') > 3){
+                        binding.kcal.amountText.text = data.removeRange(data.indexOf('.')+2,data.length-1)
+                    }
+                    else{
+                        binding.kcal.amountText.text =  data
+                    }
+                }
+
+
+
+            }.addOnFailureListener {
+                Toast.makeText(requireContext(), "Failed", Toast.LENGTH_SHORT).show()
+
+            }
+
+
         } catch (e: Exception) {
             Toast.makeText(requireContext(), "Error", Toast.LENGTH_SHORT).show()
-        }
+        }*/
 
 
 //        binding.button.setOnClickListener {

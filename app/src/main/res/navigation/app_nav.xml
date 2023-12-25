@@ -21,19 +21,21 @@
         android:id="@+id/homeScreen"
         android:name="com.example.fitnesstracker.ui.homeScreen.HomeScreen"
         android:label="home_screen"
-        tools:layout="@layout/home_screen" >
-        <action
-            android:id="@+id/action_homeScreen_to_mapsFragment"
-            app:destination="@id/mapsFragment" />
-    </fragment>
-    <fragment
-        android:id="@+id/mapsFragment"
-        android:name="com.example.fitnesstracker.ui.mapScreen.MapsFragment"
-        android:label="fragment_maps"
-        tools:layout="@layout/fragment_maps" />
+        tools:layout="@layout/home_screen" />
     <fragment
         android:id="@+id/settingsScreen"
         android:name="com.example.fitnesstracker.ui.settingsScreen.settingsScreen"
         android:label="settings_screen"
-        tools:layout="@layout/settings_screen" />
+        tools:layout="@layout/settings_screen" >
+        <action
+            android:id="@+id/action_settingsScreen_to_stepGoalDialog"
+            app:destination="@id/stepGoalDialog"
+            app:launchSingleTop="true"
+            app:popUpToInclusive="true" />
+    </fragment>
+    <dialog
+        android:id="@+id/stepGoalDialog"
+        android:name="com.example.fitnesstracker.ui.StepGoalDialog"
+        android:label="step_goal_dialog"
+        tools:layout="@layout/step_goal_dialog" />
 </navigation>

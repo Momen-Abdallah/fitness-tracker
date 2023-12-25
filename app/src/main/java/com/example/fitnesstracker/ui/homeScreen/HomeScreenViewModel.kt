@@ -1,35 +1,67 @@
 package com.example.fitnesstracker.ui.homeScreen
 
 import android.content.Context
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
-import android.hardware.SensorManager
-import android.widget.Toast
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.fitnesstracker.Utilts
 import com.example.fitnesstracker.data.repo.StepsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
 @HiltViewModel
-class HomeScreenViewModel @Inject constructor(val repository: StepsRepository): ViewModel()  {
+class HomeScreenViewModel @Inject constructor(val repository: StepsRepository,@ApplicationContext val context: Context): ViewModel()  {
 
 
     val stepsWeeksData = MutableLiveData<Map<String,Any>>()
-     fun getDaysData() {
-        viewModelScope.launch {
-            stepsWeeksData.value = repository.getDaysData().data
+
+    val lastWeekStepsData : MutableLiveData<List<Int>>
+        get() = repository.lastWeekStepsData
+
+    val days : MutableLiveData<List<String>>
+        get() = repository.days
+    val distance : MutableLiveData<String>
+        get() = repository.distance
+
+    val cal : MutableLiveData<String>
+        get() = repository.cal
+
+    val min : MutableLiveData<String>
+        get() = repository.min
+
+    val weekAverage : MutableLiveData<Int>
+        get() = repository.weekAverage
+
+//     fun getDaysData() {
+//        viewModelScope.launch {
+//            stepsWeeksData.value = repository.getDaysData().data
+//        }
+//    }
+    fun getStepsData() {
+        viewModelScope.launch{
+            repository.getStepsData()
         }
+    }
+    fun getDistance() {
+        viewModelScope.launch {
+            repository.getTodayDistance()
+        }
+    }
+    fun getCal() {
+        viewModelScope.launch {
+            repository.getTodayCal()
+        }
+    }
+    fun getMin() {
+        viewModelScope.launch {
+            repository.getTodayMin()
+        }
+    }
+
+    fun getGoal() : Int{
+        return context.getSharedPreferences("pref",Context.MODE_PRIVATE).getInt("goal",6000)
     }
 
 //    private lateinit var sensorManager: SensorManager

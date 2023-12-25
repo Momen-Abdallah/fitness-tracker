@@ -13,7 +13,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="24sp"
-        android:text="0H 30M"/>
+        android:text="0.0"
+        android:textColor="@color/white"/>
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/unit"
@@ -24,7 +25,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="16sp"
-        android:text="Min"/>
+        android:text="Min"
+        android:textColor="@color/light_gray"/>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

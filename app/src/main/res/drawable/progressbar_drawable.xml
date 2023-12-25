@@ -10,7 +10,7 @@
             android:shape="rectangle">
             <corners
                 android:radius="10dp"/>
-            <solid android:color="@android:color/darker_gray"/>
+            <solid android:color="@color/mid_gray"/>
 
         </shape>
     </item>
@@ -20,15 +20,15 @@
 
     <item
         android:id="@android:id/progress">
-        <scale
+        <clip
             android:scaleWidth="100%">
             <shape
                 android:shape="rectangle">
                 <corners
                     android:radius="10dp"/>
-                <solid android:color="@color/black"/>
+                <solid android:color="@color/light_red"/>
             </shape>
-        </scale>
+        </clip>
     </item>
 
 

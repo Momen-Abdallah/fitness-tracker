@@ -64,10 +64,10 @@ class StepCountResetReceiver : BroadcastReceiver() {
                 val todaySteps = context.getSharedPreferences("pref", Context.MODE_PRIVATE).getInt("today_steps",0)
                 val allSteps = context.getSharedPreferences("pref", Context.MODE_PRIVATE).getInt("all_steps",0)
 
-                withContext(Dispatchers.IO) {
-                    StepsRepository(context)
-                        .insertTodaySteps(steps = todaySteps)
-                }
+//                withContext(Dispatchers.IO) {
+//                    StepsRepository(context)
+//                        .insertTodaySteps(steps = todaySteps)
+//                }
 
                 val editor = context.getSharedPreferences("pref", Context.MODE_PRIVATE).edit()
                 editor.putInt("all_steps",todaySteps + allSteps)

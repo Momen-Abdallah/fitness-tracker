@@ -7,5 +7,5 @@
     <item
         android:drawable="@drawable/home_outlined"
         android:state_checked="false"
-        />
+       />
 </selector>

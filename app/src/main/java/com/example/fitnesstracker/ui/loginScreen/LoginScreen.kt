@@ -3,6 +3,7 @@ package com.example.fitnesstracker.ui.loginScreen
 import android.app.Activity
 import android.content.ContentValues
 import android.content.Context.MODE_PRIVATE
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -31,7 +32,12 @@ import kotlinx.coroutines.withContext
 
 @AndroidEntryPoint
 class LoginScreen : Fragment() {
-
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 1&&resultCode == Activity.RESULT_OK){
+            findNavController().navigate(R.id.action_loginScreen_to_homeScreen)
+        }
+    }
 
     private lateinit var binding: LoginScreenBinding
     private val viewModel: LoginScreenViewModel by viewModels()
@@ -158,6 +164,10 @@ class LoginScreen : Fragment() {
 //        val fitnessOptions = FitnessOptions.builder().addDataType(DataType.TYPE_STEP_COUNT_DELTA)
 //        Fitness.getRecordingClient(requireContext(), GoogleSignIn.getAccountForExtension(requireContext(),FitnessOptions.builder().build()))
 
+//        val launcherPermission = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()){
+//
+//        }
+//        launcherPermission.launch(Manifest)
         val launcher =
             registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
                 if (it.resultCode == Activity.RESULT_OK) {
@@ -180,6 +190,9 @@ class LoginScreen : Fragment() {
 
                     val fitnessOptions = FitnessOptions.builder()
                         .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+                        .addDataType(DataType.TYPE_DISTANCE_DELTA,FitnessOptions.ACCESS_READ)
+                        .addDataType(DataType.TYPE_MOVE_MINUTES,FitnessOptions.ACCESS_READ)
+                        .addDataType(DataType.TYPE_CALORIES_EXPENDED,FitnessOptions.ACCESS_READ)
                         .build()
 
                     val googleSignInAccount =
@@ -188,25 +201,27 @@ class LoginScreen : Fragment() {
 
 
                     if (!GoogleSignIn.hasPermissions(googleSignInAccount, fitnessOptions)) {
+
                         GoogleSignIn.requestPermissions(
                             this@LoginScreen, // Activity
                             1,
                             googleSignInAccount,
                             fitnessOptions
                         )
+                    }else{
+                        findNavController().navigate(R.id.action_loginScreen_to_homeScreen)
                     }
-                    Fitness.getRecordingClient(
-                        requireContext(),
-                        GoogleSignIn.getAccountForExtension(requireContext(), fitnessOptions)
-                    )
-                        .subscribe(DataType.TYPE_STEP_COUNT_DELTA)
-                        .addOnSuccessListener {
-                            Log.i(ContentValues.TAG, "Subscription was successful!")
-                        }
-                        .addOnFailureListener { e ->
-                            Log.w(ContentValues.TAG, "There was a problem subscribing ", e)
-                        }
-                    findNavController().navigate(R.id.action_loginScreen_to_homeScreen)
+//                    Fitness.getRecordingClient(
+//                        requireContext(),
+//                        GoogleSignIn.getAccountForExtension(requireContext(), fitnessOptions)
+//                    )
+//                        .subscribe(DataType.TYPE_STEP_COUNT_DELTA)
+//                        .addOnSuccessListener {
+//                            Log.i(ContentValues.TAG, "Subscription was successful!")
+//                        }
+//                        .addOnFailureListener { e ->
+//                            Log.w(ContentValues.TAG, "There was a problem subscribing ", e)
+//                        }
 
 
                 }
@@ -227,6 +242,10 @@ class LoginScreen : Fragment() {
                 }
 
             }
+        }
+        
+        binding.facebookSignInButton.setOnClickListener {
+            Toast.makeText(requireContext(), "sorry; it will implemented soon", Toast.LENGTH_SHORT).show()
         }
 
 

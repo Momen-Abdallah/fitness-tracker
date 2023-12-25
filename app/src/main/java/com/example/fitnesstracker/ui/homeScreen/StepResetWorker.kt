@@ -16,7 +16,7 @@ import javax.inject.Inject
 class StepResetWorker(val context: Context, val workerParams: WorkerParameters) : Worker(context, workerParams) {
 
 //    @Inject
-      var repository =  StepsRepository(context)
+//      var repository =  StepsRepository(context)
 //    @Inject
 //    lateinit var context: Context
 
@@ -27,9 +27,9 @@ class StepResetWorker(val context: Context, val workerParams: WorkerParameters) 
             val todaySteps = context.getSharedPreferences("pref", Context.MODE_PRIVATE).getInt("today_steps",0)
             val allSteps = context.getSharedPreferences("pref", Context.MODE_PRIVATE).getInt("all_steps",0)
 
-            withContext(Dispatchers.IO) {
-                repository.insertTodaySteps(steps = todaySteps)
-            }
+//            withContext(Dispatchers.IO) {
+//                repository.insertTodaySteps(steps = todaySteps)
+//            }
 
             val editor = context.getSharedPreferences("pref", Context.MODE_PRIVATE).edit()
             editor.putInt("all_steps",todaySteps + allSteps)

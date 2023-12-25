@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.bottomNavigationBar.itemActiveIndicatorColor = ColorStateList.valueOf(Color.parseColor("#661BA8F0"))
+        binding.bottomNavigationBar.itemActiveIndicatorColor = ColorStateList.valueOf(Color.parseColor("#ffE84011"))
 
         val navHost = supportFragmentManager.findFragmentById(R.id.fragmentContainerView) as NavHostFragment
         val navController = navHost.navController
@@ -63,8 +63,8 @@ class MainActivity : AppCompatActivity() {
         if (ContextCompat.checkSelfPermission(this,Manifest.permission.BODY_SENSORS) == PackageManager.PERMISSION_DENIED)
             requestPermissions(arrayOf(Manifest.permission.SCHEDULE_EXACT_ALARM),10)
 
-        if (ContextCompat.checkSelfPermission(this,Manifest.permission.SET_ALARM) == PackageManager.PERMISSION_DENIED)
-            requestPermissions(arrayOf(Manifest.permission.SET_ALARM),10)
+        if (ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_DENIED)
+            requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),10)
 
 //        if (getSharedPreferences("pref", MODE_PRIVATE).getBoolean("login", false))
 //            navHost.findNavController().navigate(R.id.homeScreen)
