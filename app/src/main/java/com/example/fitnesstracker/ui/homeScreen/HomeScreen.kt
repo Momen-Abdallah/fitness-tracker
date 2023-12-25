@@ -27,6 +27,7 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.example.fitnesstracker.R
 import com.example.fitnesstracker.databinding.HomeScreenBinding
+import com.example.fitnesstracker.services.NotificationWorker
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.FitnessOptions
@@ -121,12 +122,22 @@ class HomeScreen : Fragment()//, SensorEventListener
 //            binding.seventh.progressCircular.max = goal
 //            binding.progressBar.max = goal
 //            binding.goalText.text = goal.toString()
-            binding.min.unit.text = "Min"
-            binding.kcal.unit.text = "Cal"
-            binding.km.unit.text =  "Km"
 
 
-        viewModel.lastWeekStepsData.observe(viewLifecycleOwner){
+        if (requireContext().getSharedPreferences("pref", Context.MODE_PRIVATE)
+                .getBoolean("isNotificationWorkerNotScheduled", true)
+        ) {
+            requireContext().getSharedPreferences("pref", Context.MODE_PRIVATE).edit()
+                .putBoolean("isNotificationWorkerScheduled", false).apply()
+            scheduleNotificationWorker()
+        }
+
+        binding.min.unit.text = "Min"
+        binding.kcal.unit.text = "Cal"
+        binding.km.unit.text = "Km"
+
+
+        viewModel.lastWeekStepsData.observe(viewLifecycleOwner) {
             binding.stepsText.text = it[0].toString()
             binding.second.progressCircular.progress = it[1]
             binding.third.progressCircular.progress = it[2]
@@ -139,7 +150,7 @@ class HomeScreen : Fragment()//, SensorEventListener
             binding.progressBar.progress = it[0]
         }
 
-        viewModel.days.observe(viewLifecycleOwner){
+        viewModel.days.observe(viewLifecycleOwner) {
             binding.first.dayText.text = it[0]
             binding.second.dayText.text = it[1]
             binding.third.dayText.text = it[2]
@@ -151,17 +162,17 @@ class HomeScreen : Fragment()//, SensorEventListener
             binding.first.dayText.setTextColor(requireContext().getColor(R.color.light_red))
         }
 
-        viewModel.distance.observe(viewLifecycleOwner){
+        viewModel.distance.observe(viewLifecycleOwner) {
             binding.km.amountText.text = it
         }
-        viewModel.cal.observe(viewLifecycleOwner){
+        viewModel.cal.observe(viewLifecycleOwner) {
             binding.kcal.amountText.text = it
         }
-        viewModel.min.observe(viewLifecycleOwner){
+        viewModel.min.observe(viewLifecycleOwner) {
             binding.min.amountText.text = it
         }
 
-        viewModel.weekAverage.observe(viewLifecycleOwner){
+        viewModel.weekAverage.observe(viewLifecycleOwner) {
             binding.dailyAverage.text = "Week average: ${it}"
         }
 
@@ -264,214 +275,214 @@ class HomeScreen : Fragment()//, SensorEventListener
 //        }
 //        viewModel.getDaysData()
 
-       /* val fitnessOptions = FitnessOptions.builder()
-            .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_DISTANCE_DELTA,FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_MOVE_MINUTES,FitnessOptions.ACCESS_READ)
-            .addDataType(DataType.TYPE_CALORIES_EXPENDED,FitnessOptions.ACCESS_READ)
-            .build()
+        /* val fitnessOptions = FitnessOptions.builder()
+             .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+             .addDataType(DataType.TYPE_DISTANCE_DELTA,FitnessOptions.ACCESS_READ)
+             .addDataType(DataType.TYPE_MOVE_MINUTES,FitnessOptions.ACCESS_READ)
+             .addDataType(DataType.TYPE_CALORIES_EXPENDED,FitnessOptions.ACCESS_READ)
+             .build()
 
-        val googleSignInAccount = GoogleSignIn.getAccountForExtension(requireContext(),fitnessOptions)
-//        Fitness.getRecordingClient(requireContext(),googleSignInAccount)
+         val googleSignInAccount = GoogleSignIn.getAccountForExtension(requireContext(),fitnessOptions)
+ //        Fitness.getRecordingClient(requireContext(),googleSignInAccount)
 
-        try {
+         try {
 
-//            Fitness.getRecordingClient(requireContext(), GoogleSignIn.getAccountForExtension(requireContext(), fitnessOptions))
-//                .subscribe(DataType.TYPE_STEP_COUNT_DELTA)
-//                .addOnSuccessListener {
-//                    Log.i(TAG,"Subscription was successful!")
-//                }
-//                .addOnFailureListener { e ->
-//                    Log.w(TAG, "There was a problem subscribing ", e)
-//                }
-
-
-//            val historyClient = Fitness.getHistoryClient(requireContext(), googleSignInAccount)
-
-//            val startTime = LocalDateTime.of(2023, 12, 21, 0, 0).atZone(ZoneId.systemDefault()).toEpochSecond() * 1000
-//            val endTime = startTime + DateUtils.DAY_IN_MILLIS
-
-//            val readRequest = DataReadRequest.Builder()
-//                .aggregate(DataType.TYPE_STEP_COUNT_DELTA, DataType.AGGREGATE_STEP_COUNT_DELTA)
-//                .bucketByTime(1, TimeUnit.DAYS)
-//                .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
-//                .build()
-//
-//            val readRequest2 =SessionReadRequest.Builder()
-//                .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
-//                .read(DataType.TYPE_STEP_COUNT_DELTA)
-//                .build();
+ //            Fitness.getRecordingClient(requireContext(), GoogleSignIn.getAccountForExtension(requireContext(), fitnessOptions))
+ //                .subscribe(DataType.TYPE_STEP_COUNT_DELTA)
+ //                .addOnSuccessListener {
+ //                    Log.i(TAG,"Subscription was successful!")
+ //                }
+ //                .addOnFailureListener { e ->
+ //                    Log.w(TAG, "There was a problem subscribing ", e)
+ //                }
 
 
-//            val startTime = LocalDate.now().atStartOfDay(ZoneId.systemDefault())
-//            val endTime = LocalDateTime.of(LocalDate.now().minusDays(1), LocalTime.MIDNIGHT)
-            if (!GoogleSignIn.hasPermissions(googleSignInAccount, fitnessOptions)) {
-                GoogleSignIn.requestPermissions(
-                    this, // Activity
-                    1,
-                    googleSignInAccount,
-                    fitnessOptions
-                )
-            }
+ //            val historyClient = Fitness.getHistoryClient(requireContext(), googleSignInAccount)
 
-            for (i in 0..6){
-                var startTime : ZonedDateTime
-                var endTime : ZonedDateTime
-                if (i == 0){
-                     startTime = LocalDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT).atZone(ZoneId.systemDefault())
-                     endTime =  LocalDateTime.of(LocalDate.now(), LocalTime.now()).atZone(ZoneId.systemDefault())
-                }else{
-                     startTime = LocalDateTime.of(LocalDate.now().minusDays(i.toLong()), LocalTime.MIDNIGHT).atZone(ZoneId.systemDefault())
-                     endTime =  LocalDateTime.of(LocalDate.now().minusDays((i-1).toLong()), LocalTime.MIDNIGHT).atZone(ZoneId.systemDefault())
-                }
+ //            val startTime = LocalDateTime.of(2023, 12, 21, 0, 0).atZone(ZoneId.systemDefault()).toEpochSecond() * 1000
+ //            val endTime = startTime + DateUtils.DAY_IN_MILLIS
 
-                val date = LocalDate.now().minusDays(i.toLong()).toString()
-                val day =
-                    LocalDate.now().minusDays(i.toLong()).dayOfWeek.toString().first().toString()
-//            val startTime = LocalDate.now().atStartOfDay(ZoneId.systemDefault())
-//            val endTime = LocalDateTime.now().atZone(ZoneId.systemDefault())
-                val datasource = DataSource.Builder()
-                    .setAppPackageName("com.google.android.gms")
-                    .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
-                    .setType(DataSource.TYPE_DERIVED)
-                    .setStreamName("estimated_steps")
-                    .build()
-
-                val request = DataReadRequest.Builder()
-                    .aggregate(datasource)
-                    .bucketByTime(1, TimeUnit.DAYS)
-//                .setTimeRange(startTime.toEpochSecond(ZoneOffset.MIN), endTime.toEpochSecond(ZoneOffset.MIN), TimeUnit.SECONDS)
-                    .setTimeRange(startTime.toEpochSecond(), endTime.toEpochSecond(), TimeUnit.SECONDS)
-                    .build()
-
-                Fitness.getHistoryClient(requireContext(), GoogleSignIn.getAccountForExtension(requireContext(), fitnessOptions))
-                    .readData(request)
-                    .addOnSuccessListener { response ->
-                        val totalSteps = response.buckets
-                            .flatMap { it.dataSets }
-                            .flatMap { it.dataPoints }
-                            .sumBy { it.getValue(Field.FIELD_STEPS).asInt() }
-
-                        when(i){
-                            0->{
-                                binding.stepsText.text = totalSteps.toString()
-                                binding.first.progressCircular.progress = totalSteps
-                                binding.progressBar.progress = totalSteps
-                                binding.first.dayText.text = day
-                                binding.first.dayText.setTextColor(Color.RED)
-//                                binding.min.amountText.text =
-//                                    (totalSteps / 6000.0).roundToInt().toString().apply { if (length > 4) substring(3) }
-//                                binding.kcal.amountText.text =
-//                                    (totalSteps * 0.04).toString().apply { if (length > 4) this.substring(3) }
-//                                binding.km.amountText.text =
-//                                    (totalSteps * 75 / 100000.0).toString().apply { if (length > 4) substring(3) }
-
-                            }
-                            1->{
-                                binding.second.progressCircular.progress = totalSteps
-                                binding.second.dayText.text = day
-
-                            }
-                            2->{
-                                binding.third.progressCircular.progress = totalSteps
-                                binding.third.dayText.text = day
-
-                            }
-                            3->{
-                                binding.forth.progressCircular.progress = totalSteps
-                                binding.forth.dayText.text = day
-
-                            }
-                            4->{
-                                binding.fifth.progressCircular.progress = totalSteps
-                                binding.fifth.dayText.text = day
+ //            val readRequest = DataReadRequest.Builder()
+ //                .aggregate(DataType.TYPE_STEP_COUNT_DELTA, DataType.AGGREGATE_STEP_COUNT_DELTA)
+ //                .bucketByTime(1, TimeUnit.DAYS)
+ //                .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+ //                .build()
+ //
+ //            val readRequest2 =SessionReadRequest.Builder()
+ //                .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS)
+ //                .read(DataType.TYPE_STEP_COUNT_DELTA)
+ //                .build();
 
 
-                            }
-                            5->{
-                                binding.sixth.progressCircular.progress = totalSteps
-                                binding.sixth.dayText.text = day
+ //            val startTime = LocalDate.now().atStartOfDay(ZoneId.systemDefault())
+ //            val endTime = LocalDateTime.of(LocalDate.now().minusDays(1), LocalTime.MIDNIGHT)
+             if (!GoogleSignIn.hasPermissions(googleSignInAccount, fitnessOptions)) {
+                 GoogleSignIn.requestPermissions(
+                     this, // Activity
+                     1,
+                     googleSignInAccount,
+                     fitnessOptions
+                 )
+             }
 
-                            }
-                            6->{
-                                binding.seventh.progressCircular.progress = totalSteps
-                                binding.seventh.dayText.text = day
+             for (i in 0..6){
+                 var startTime : ZonedDateTime
+                 var endTime : ZonedDateTime
+                 if (i == 0){
+                      startTime = LocalDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT).atZone(ZoneId.systemDefault())
+                      endTime =  LocalDateTime.of(LocalDate.now(), LocalTime.now()).atZone(ZoneId.systemDefault())
+                 }else{
+                      startTime = LocalDateTime.of(LocalDate.now().minusDays(i.toLong()), LocalTime.MIDNIGHT).atZone(ZoneId.systemDefault())
+                      endTime =  LocalDateTime.of(LocalDate.now().minusDays((i-1).toLong()), LocalTime.MIDNIGHT).atZone(ZoneId.systemDefault())
+                 }
 
-                            }
-                        }
-                    }
-            }
+                 val date = LocalDate.now().minusDays(i.toLong()).toString()
+                 val day =
+                     LocalDate.now().minusDays(i.toLong()).dayOfWeek.toString().first().toString()
+ //            val startTime = LocalDate.now().atStartOfDay(ZoneId.systemDefault())
+ //            val endTime = LocalDateTime.now().atZone(ZoneId.systemDefault())
+                 val datasource = DataSource.Builder()
+                     .setAppPackageName("com.google.android.gms")
+                     .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
+                     .setType(DataSource.TYPE_DERIVED)
+                     .setStreamName("estimated_steps")
+                     .build()
+
+                 val request = DataReadRequest.Builder()
+                     .aggregate(datasource)
+                     .bucketByTime(1, TimeUnit.DAYS)
+ //                .setTimeRange(startTime.toEpochSecond(ZoneOffset.MIN), endTime.toEpochSecond(ZoneOffset.MIN), TimeUnit.SECONDS)
+                     .setTimeRange(startTime.toEpochSecond(), endTime.toEpochSecond(), TimeUnit.SECONDS)
+                     .build()
+
+                 Fitness.getHistoryClient(requireContext(), GoogleSignIn.getAccountForExtension(requireContext(), fitnessOptions))
+                     .readData(request)
+                     .addOnSuccessListener { response ->
+                         val totalSteps = response.buckets
+                             .flatMap { it.dataSets }
+                             .flatMap { it.dataPoints }
+                             .sumBy { it.getValue(Field.FIELD_STEPS).asInt() }
+
+                         when(i){
+                             0->{
+                                 binding.stepsText.text = totalSteps.toString()
+                                 binding.first.progressCircular.progress = totalSteps
+                                 binding.progressBar.progress = totalSteps
+                                 binding.first.dayText.text = day
+                                 binding.first.dayText.setTextColor(Color.RED)
+ //                                binding.min.amountText.text =
+ //                                    (totalSteps / 6000.0).roundToInt().toString().apply { if (length > 4) substring(3) }
+ //                                binding.kcal.amountText.text =
+ //                                    (totalSteps * 0.04).toString().apply { if (length > 4) this.substring(3) }
+ //                                binding.km.amountText.text =
+ //                                    (totalSteps * 75 / 100000.0).toString().apply { if (length > 4) substring(3) }
+
+                             }
+                             1->{
+                                 binding.second.progressCircular.progress = totalSteps
+                                 binding.second.dayText.text = day
+
+                             }
+                             2->{
+                                 binding.third.progressCircular.progress = totalSteps
+                                 binding.third.dayText.text = day
+
+                             }
+                             3->{
+                                 binding.forth.progressCircular.progress = totalSteps
+                                 binding.forth.dayText.text = day
+
+                             }
+                             4->{
+                                 binding.fifth.progressCircular.progress = totalSteps
+                                 binding.fifth.dayText.text = day
 
 
+                             }
+                             5->{
+                                 binding.sixth.progressCircular.progress = totalSteps
+                                 binding.sixth.dayText.text = day
 
+                             }
+                             6->{
+                                 binding.seventh.progressCircular.progress = totalSteps
+                                 binding.seventh.dayText.text = day
 
-            val historyClient = Fitness.getHistoryClient(requireContext(), googleSignInAccount)
-            historyClient.readDailyTotal(DataType.TYPE_DISTANCE_DELTA).addOnSuccessListener {
-//                Toast.makeText(requireContext(), "Success1 ${(it.dataPoints.size)}", Toast.LENGTH_SHORT).show()
-//                binding.km.amountText.text = (it.dataPoints[0]?.getValue(Field.FIELD_DISTANCE)?.toString() ?: 0).toString()
-                if (it.dataPoints.isNotEmpty()){
-                    val data = (it.dataPoints[0]?.getValue(Field.FIELD_DISTANCE)?.toString()!!.toDouble()/1000 * 1.609).toString()
-                    if (data!!.length - data.indexOf('.') > 3){
-                        binding.km.amountText.text = data.removeRange(data.indexOf('.')+2,data.length-1)
-                    }
-                    else{
-                        binding.km.amountText.text =  data
-                    }
-                }
-
-//                if (it.dataPoints.firstOrNull()?.getValue(Field.FIELD_DISTANCE) != null
-//                ) {
-////                    Toast.makeText(requireContext(), "null1 ${(it.dataPoints.size)}", Toast.LENGTH_SHORT).show()
-//                    Toast.makeText(requireContext(), "null1 ${it.dataPoints.firstOrNull()?.getValue(Field.FIELD_DISTANCE)}", Toast.LENGTH_SHORT).show()
-//                }
-
-            }.addOnFailureListener {
-                Toast.makeText(requireContext(), "Failed", Toast.LENGTH_SHORT).show()
-
-            }
-            historyClient.readDailyTotal(DataType.TYPE_MOVE_MINUTES).addOnSuccessListener {
-
-
-//                Toast.makeText(requireContext(), "Success2 ${(it.dataPoints.size)}", Toast.LENGTH_SHORT).show()
-                if (it.dataPoints.isNotEmpty()){
-                    val data = it.dataPoints[0]?.getValue(Field.FIELD_DURATION)?.toString()
-                    if (data!!.length - data.indexOf('.') > 3){
-                        binding.min.amountText.text = data.removeRange(data.indexOf('.')+2,data.length-1)
-                    }
-                    else{
-                        binding.min.amountText.text =  data
-                    }
-                }
-
-
-            }.addOnFailureListener {
-                Toast.makeText(requireContext(), "Failed", Toast.LENGTH_SHORT).show()
-
-            }
-            historyClient.readDailyTotal(DataType.TYPE_CALORIES_EXPENDED).addOnSuccessListener {
-//                Toast.makeText(requireContext(), "Success3 ${(it.dataPoints.size)}", Toast.LENGTH_SHORT).show()
-//                binding.kcal.amountText.text = (it.dataPoints[0]?.getValue(Field.FIELD_CALORIES)?.toString() ?: 0).toString()
-                if (it.dataPoints.isNotEmpty()){
-                    val data = it.dataPoints[0]?.getValue(Field.FIELD_CALORIES)?.toString()
-                    if (data!!.length - data.indexOf('.') > 3){
-                        binding.kcal.amountText.text = data.removeRange(data.indexOf('.')+2,data.length-1)
-                    }
-                    else{
-                        binding.kcal.amountText.text =  data
-                    }
-                }
+                             }
+                         }
+                     }
+             }
 
 
 
-            }.addOnFailureListener {
-                Toast.makeText(requireContext(), "Failed", Toast.LENGTH_SHORT).show()
 
-            }
+             val historyClient = Fitness.getHistoryClient(requireContext(), googleSignInAccount)
+             historyClient.readDailyTotal(DataType.TYPE_DISTANCE_DELTA).addOnSuccessListener {
+ //                Toast.makeText(requireContext(), "Success1 ${(it.dataPoints.size)}", Toast.LENGTH_SHORT).show()
+ //                binding.km.amountText.text = (it.dataPoints[0]?.getValue(Field.FIELD_DISTANCE)?.toString() ?: 0).toString()
+                 if (it.dataPoints.isNotEmpty()){
+                     val data = (it.dataPoints[0]?.getValue(Field.FIELD_DISTANCE)?.toString()!!.toDouble()/1000 * 1.609).toString()
+                     if (data!!.length - data.indexOf('.') > 3){
+                         binding.km.amountText.text = data.removeRange(data.indexOf('.')+2,data.length-1)
+                     }
+                     else{
+                         binding.km.amountText.text =  data
+                     }
+                 }
+
+ //                if (it.dataPoints.firstOrNull()?.getValue(Field.FIELD_DISTANCE) != null
+ //                ) {
+ ////                    Toast.makeText(requireContext(), "null1 ${(it.dataPoints.size)}", Toast.LENGTH_SHORT).show()
+ //                    Toast.makeText(requireContext(), "null1 ${it.dataPoints.firstOrNull()?.getValue(Field.FIELD_DISTANCE)}", Toast.LENGTH_SHORT).show()
+ //                }
+
+             }.addOnFailureListener {
+                 Toast.makeText(requireContext(), "Failed", Toast.LENGTH_SHORT).show()
+
+             }
+             historyClient.readDailyTotal(DataType.TYPE_MOVE_MINUTES).addOnSuccessListener {
 
 
-        } catch (e: Exception) {
-            Toast.makeText(requireContext(), "Error", Toast.LENGTH_SHORT).show()
-        }*/
+ //                Toast.makeText(requireContext(), "Success2 ${(it.dataPoints.size)}", Toast.LENGTH_SHORT).show()
+                 if (it.dataPoints.isNotEmpty()){
+                     val data = it.dataPoints[0]?.getValue(Field.FIELD_DURATION)?.toString()
+                     if (data!!.length - data.indexOf('.') > 3){
+                         binding.min.amountText.text = data.removeRange(data.indexOf('.')+2,data.length-1)
+                     }
+                     else{
+                         binding.min.amountText.text =  data
+                     }
+                 }
+
+
+             }.addOnFailureListener {
+                 Toast.makeText(requireContext(), "Failed", Toast.LENGTH_SHORT).show()
+
+             }
+             historyClient.readDailyTotal(DataType.TYPE_CALORIES_EXPENDED).addOnSuccessListener {
+ //                Toast.makeText(requireContext(), "Success3 ${(it.dataPoints.size)}", Toast.LENGTH_SHORT).show()
+ //                binding.kcal.amountText.text = (it.dataPoints[0]?.getValue(Field.FIELD_CALORIES)?.toString() ?: 0).toString()
+                 if (it.dataPoints.isNotEmpty()){
+                     val data = it.dataPoints[0]?.getValue(Field.FIELD_CALORIES)?.toString()
+                     if (data!!.length - data.indexOf('.') > 3){
+                         binding.kcal.amountText.text = data.removeRange(data.indexOf('.')+2,data.length-1)
+                     }
+                     else{
+                         binding.kcal.amountText.text =  data
+                     }
+                 }
+
+
+
+             }.addOnFailureListener {
+                 Toast.makeText(requireContext(), "Failed", Toast.LENGTH_SHORT).show()
+
+             }
+
+
+         } catch (e: Exception) {
+             Toast.makeText(requireContext(), "Error", Toast.LENGTH_SHORT).show()
+         }*/
 
 
 //        binding.button.setOnClickListener {
@@ -555,7 +566,6 @@ class HomeScreen : Fragment()//, SensorEventListener
 
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     fun scheduleWork() {
 
 //        val workRequest = PeriodicWorkRequest.Builder(
@@ -610,12 +620,45 @@ class HomeScreen : Fragment()//, SensorEventListener
 
         val workRequest = PeriodicWorkRequestBuilder<StepResetWorker>(24, TimeUnit.HOURS)
             .setConstraints(constraints)
-            .setInitialDelay(delay, TimeUnit.SECONDS)
+            .setInitialDelay(delay, TimeUnit.MINUTES)
             .build()
 
         WorkManager.getInstance(requireContext().applicationContext).enqueueUniquePeriodicWork(
             "worker_1",
             ExistingPeriodicWorkPolicy.KEEP,
+            workRequest
+        )
+    }
+
+    fun scheduleNotificationWorker() {
+
+        val SELF_REMINDER_HOUR = 10
+
+        val delay = if (DateTime.now().hourOfDay < SELF_REMINDER_HOUR) {
+            Duration(
+                DateTime.now(),
+                DateTime.now().withTimeAtStartOfDay().plusHours(SELF_REMINDER_HOUR)
+            ).standardMinutes
+        } else {
+            Duration(
+                DateTime.now(),
+                DateTime.now().withTimeAtStartOfDay().plusDays(1).plusHours(SELF_REMINDER_HOUR)
+            ).standardMinutes
+        }
+
+        val constraints = Constraints.Builder()
+            .setRequiresCharging(false)
+            .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
+            .build()
+
+        val workRequest = PeriodicWorkRequestBuilder<NotificationWorker>(24,TimeUnit.HOURS)
+            .setInitialDelay(delay,TimeUnit.MINUTES)
+            .setConstraints(constraints)
+            .build()
+
+        WorkManager.getInstance(requireContext().applicationContext).enqueueUniquePeriodicWork(
+            "notificationWorker"
+            ,ExistingPeriodicWorkPolicy.KEEP,
             workRequest
         )
     }

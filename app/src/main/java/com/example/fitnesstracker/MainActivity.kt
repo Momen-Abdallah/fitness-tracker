@@ -58,14 +58,18 @@ class MainActivity : AppCompatActivity() {
 
         if (ContextCompat.checkSelfPermission(this,Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_DENIED){
             requestPermissions(arrayOf(Manifest.permission.ACTIVITY_RECOGNITION),10)
-
         }
+
         if (ContextCompat.checkSelfPermission(this,Manifest.permission.BODY_SENSORS) == PackageManager.PERMISSION_DENIED)
-            requestPermissions(arrayOf(Manifest.permission.SCHEDULE_EXACT_ALARM),10)
+            requestPermissions(arrayOf(Manifest.permission.SCHEDULE_EXACT_ALARM),15)
 
         if (ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_DENIED)
-            requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),10)
+            requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),12)
 
+        if (ContextCompat.checkSelfPermission(this,Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_DENIED)
+            requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS),11)
+        if (ContextCompat.checkSelfPermission(this,Manifest.permission.SCHEDULE_EXACT_ALARM) == PackageManager.PERMISSION_DENIED)
+            requestPermissions(arrayOf(Manifest.permission.SCHEDULE_EXACT_ALARM),16)
 //        if (getSharedPreferences("pref", MODE_PRIVATE).getBoolean("login", false))
 //            navHost.findNavController().navigate(R.id.homeScreen)
 
