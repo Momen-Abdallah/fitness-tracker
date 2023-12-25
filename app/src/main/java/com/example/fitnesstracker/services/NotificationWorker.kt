@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat
+import androidx.core.app.AlarmManagerCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.work.Worker
@@ -26,7 +27,6 @@ class NotificationWorker(val context: Context,workerParameters: WorkerParameters
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             NotificationManagerCompat.from(context).notify(1,notification)
-
         }
        return Result.success()
     }
